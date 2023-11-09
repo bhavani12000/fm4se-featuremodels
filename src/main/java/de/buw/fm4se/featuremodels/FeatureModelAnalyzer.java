@@ -6,50 +6,61 @@ import java.util.List;
 import de.buw.fm4se.featuremodels.exec.LimbooleExecutor;
 import de.buw.fm4se.featuremodels.fm.FeatureModel;
 
-/**
- * This code needs to be implemented by translating FMs to input for Limboole
- * and interpreting the output
- *
- */
 public class FeatureModelAnalyzer {
 
-  public static boolean checkConsistent(FeatureModel fm) {
-    String formula = FeatureModelTranslator.translateToFormula(fm);
     
-    String result;
-    try {
-      result = LimbooleExecutor.runLimboole(formula, true);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return false;
+    public static boolean checkAllProductsPreserved(FeatureModel fm1, FeatureModel fm2) {
+        
+        String formulaFM1 = FeatureModelTranslator.translateToFormula(fm1);
+        String formulaFM2 = FeatureModelTranslator.translateToFormula(fm2);
+
+        
+        return checkProductsPreserved(formulaFM1, formulaFM2);
     }
-    if (result.contains("UNSATISFIABLE")) {
-      return false;
+
+    private static boolean checkProductsPreserved(String formulaFM1, String formulaFM2) {
+        
+        for (Product product : fm1.getAllProducts()) {
+            
+            boolean isProductPreserved = isProductPreserved(product, formulaFM1, formulaFM2);
+
+            
+            if (!isProductPreserved) {
+                return false;
+            }
+        }
+
+        // All products of fm1 are preserved in fm2
+        return true;
     }
-    return true;
-  }
 
-  public static List<String> deadFeatureNames(FeatureModel fm) {
-    List<String> deadFeatures = new ArrayList<>();
+    private static boolean isProductPreserved(Product product, String formulaFM1, String formulaFM2) {
+      
+        String substitutedFormulaFM1 = substituteFeatureValues(formulaFM1, product);
 
-    // TODO check for dead features
+        
+        return checkSatisfiability(substitutedFormulaFM1, formulaFM2);
+    }
 
-    return deadFeatures;
-  }
+    private static String substituteFeatureValues(String formula, Product product) {
+     
+        return formula;
+    }
 
-  public static List<String> mandatoryFeatureNames(FeatureModel fm) {
-    List<String> mandatoryFeatures = new ArrayList<>();
+    private static boolean checkSatisfiability(String formulaFM1, String formulaFM2) {
+        
+        String implicationFormula = String.format("(%s -> %s)", formulaFM1, formulaFM2);
 
-    // TODO check for mandatory features
+       
+        try {
+            String result = LimbooleExecutor.runLimboole(implicationFormula, true);
+            return !result.contains("UNSATISFIABLE");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
-    return mandatoryFeatures;
-  }
-
-  public static boolean checkAllProductsPreserved(FeatureModel fm1, FeatureModel fm2) {
-
-    // TODO check whether all products of fm1 are also products of fm2
-    
-    return false;    
-  }
+  
 
 }
